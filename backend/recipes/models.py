@@ -18,10 +18,9 @@ class Recipe(models.Model):
                                related_name='recipes'
                                )
     ingredients = models.ManyToManyField('ingredients.IngredientWeight',
-                                         on_delete=models.PROTECT,
                                          related_name='recipes'
                                          )
-    tags = models.ManyToManyField('recipe.Tag')
+    tags = models.ManyToManyField('recipes.Tag', related_name='recipes')
     cooking_time = models.PositiveSmallIntegerField('Время приготовления (в минутах)')
 
     def __str__(self):
