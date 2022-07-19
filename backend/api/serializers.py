@@ -1,9 +1,34 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from djoser.serializers import UserSerializer, UserCreateSerializer
+from drf_extra_fields.fields import Base64ImageField
+from drf_extra_fields.relations import PresentablePrimaryKeyRelatedField
+from recipes.models import Recipe, Tag, IngredientWeight
+from users.models import Follow, ShoppingList, Favorite, User
+from ingredients.models import Ingredient
 
-from recipes.models import Recipe, Tag
-from users.models import Follow, ShoppingList, Favorite
-from django.contrib.auth.models import User
+
+class IngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('id', 'name', 'measurement_unit')
+        read_only_fields = ('id',)
+        model = Ingredient
+
+
+class IngredientWeightSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    measurement_unit = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return obj.ingredient.name
+
+    def get_measurement_unit(self, obj):
+        return obj.ingredient.measurement_unit
+
+    class Meta:
+        model = IngredientWeight
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -12,6 +37,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
         queryset=User.objects.all(),
     )
+    image = Base64ImageField()
+    ingredients = PresentablePrimaryKeyRelatedField(
+        queryset=IngredientWeight.objects.all(),
+        presentation_serializer=IngredientWeightSerializer,
+        read_source=None
+    )
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         fields = ('id',
@@ -27,6 +60,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         read_only_fields = ('id',)
 
+    def get_is_favorited(self, obj):
+        user = self.context['request'].user
+        if user is None or user.is_anonymous:
+            return False
+        recipe = obj
+        return Favorite.objects.filter(user=user, recipe=recipe).exist()
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context['request'].user
+        if user is None or user.is_anonymous:
+            return False
+        recipe = obj
+        return ShoppingList.objects.filter(user=user, recipe=recipe).exist()
+
 
 class TagSerializer(serializers.ModelSerializer):
 
@@ -36,74 +83,85 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
 
 
-class FollowSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        read_only=True, slug_field='username',
-        default=serializers.CurrentUserDefault()
-    )
-    following = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=User.objects.all()
-    )
-
-    def validate(self, data):
-        if self.context['request'].user == data['following']:
-            raise serializers.ValidationError(
-                'Нальзя подписываться на самого себя'
-            )
-        return data
+class RecipeSmallSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
-        model = Follow
-        read_only_fields = ('id', 'user')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=('user', 'following')
-            )
+        model = Recipe
+        fields = [
+            'id',
+            'name',
+            'image',
+            'cooking_time'
         ]
 
 
-class ShoppingListSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        read_only=True, slug_field='username',
-        default=serializers.CurrentUserDefault()
-    )
-    shopping_lists = serializers.SlugRelatedField(
-        slug_field='id',
-        queryset=ShoppingList.objects.all()
-    )
+class SubscriptionSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        fields = '__all__'
-        model = ShoppingList
-        read_only_fields = ('id', 'user')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=('user', 'shopping_lists')
-            )
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
+        read_only_fields = ('id', 'email', 'username', 'first_name', 'last_name',)
+
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Follow.objects.filter(user=user).filter(author=obj).exists()
+        return False
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.all().count()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit is not None:
+            queryset = Recipe.objects.filter(author=obj.following)[:int(recipes_limit)]
+        else:
+            queryset = Recipe.objects.filter(author=obj.following)
+        return RecipeSmallSerializer(queryset, many=True).data
+
+
+class CustomUserSerializer(UserSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed'
         ]
 
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        if user is None or user.is_anonymous:
+            return False
+        return Follow.objects.filter(author=obj, user=user).exists()
 
-class FavoriteSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        read_only=True, slug_field='username',
-        default=serializers.CurrentUserDefault()
-    )
-    favorites = serializers.SlugRelatedField(
-        slug_field='id',
-        queryset=ShoppingList.objects.all()
-    )
+
+class CustomUserCreateSerializer(UserCreateSerializer):
 
     class Meta:
-        fields = '__all__'
-        model = ShoppingList
-        read_only_fields = ('id', 'user')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=('user', 'favorites')
-            )
+        model = User
+        fields = [
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
         ]
