@@ -11,14 +11,14 @@ class Recipe(models.Model):
         User,
         verbose_name='автор',
         on_delete=models.CASCADE,
-        related_name='recipes'
+        related_name='author_recipes'
         )
     ingredients = models.ManyToManyField(
         Ingredient,
-        related_name='recipes',
+        related_name='recipes_ingredients',
         through='IngredientWeight'
         )
-    tags = models.ManyToManyField('recipes.Tag', related_name='recipes')
+    tags = models.ManyToManyField('recipes.Tag', related_name='recipes_tag')
     cooking_time = models.PositiveSmallIntegerField('время приготовления (в минутах)')
 
     class Meta:
@@ -50,7 +50,12 @@ class IngredientWeight(models.Model):
         verbose_name='рецепт',
         db_index=True
     )
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.PROTECT, verbose_name='ингридиент')
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.PROTECT,
+        verbose_name='ингридиент',
+        related_name='ingredient_recipes',
+    )
     amount = models.PositiveIntegerField('количество')
 
     class Meta:

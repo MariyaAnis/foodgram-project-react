@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -19,6 +18,13 @@ class Follow(models.Model):
         related_name='following',
     )
 
+    class Meta:
+        verbose_name = 'подписка'
+        verbose_name_plural = 'подписки на пользовотелей'
+
+    def __str__(self):
+        return self.author
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -34,11 +40,15 @@ class Favorite(models.Model):
         related_name='favorites',
     )
 
+    class Meta:
+        verbose_name = 'любимый рецепт'
+        verbose_name_plural = 'любимые рецепты'
+
+    def __str__(self):
+        return self.recipe.name
+
 
 class ShoppingList(models.Model):
-    class Meta:
-        verbose_name = 'список покупок'
-        verbose_name_plural = 'списоки покупок'
 
     user = models.ForeignKey(
         User,
@@ -53,5 +63,9 @@ class ShoppingList(models.Model):
         related_name='shopping_lists',
     )
 
+    class Meta:
+        verbose_name = 'список покупок'
+        verbose_name_plural = 'списки покупок'
+
     def __str__(self):
-        return self.name
+        return self.recipe.name

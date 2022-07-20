@@ -1,3 +1,30 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Favorite, ShoppingList, Follow
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'author',
+    )
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'recipe',
+    )
+
+
+@admin.register(ShoppingList)
+class ShoppingListAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'user',
+        'recipe',
+    )

@@ -1,11 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import filters, permissions, viewsets, status
-from djoser.views import UserViewSet as DjoserUserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from .filters import RecipeFilter
 
 
 from recipes.models import Recipe, Tag, IngredientWeight
@@ -19,18 +19,21 @@ from .serializers import (RecipeSerializer,
                           RecipeSmallSerializer,
                           IngredientSerializer,
                           IngredientWeightSerializer,
-                          CustomUserSerializer,
-                          CustomUserCreateSerializer)
+                          RecipeCreateUpdateSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnlyPermission,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_fields = ('name',)
-    search_fields = ('name', )
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
     pagination_class = LimitOffsetPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST' or self.request.method == 'PATCH':
+            return RecipeCreateUpdateSerializer
+        return RecipeSerializer
 
     @action(
         detail=True,
@@ -69,8 +72,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'Вы не добавляли этот рецепт',
                 status=status.HTTP_400_BAD_REQUEST
             )
-        record = model.objects.filter(recipe=recipe, user=self.request.user)
-        record.delete()
+        recipe = model.objects.filter(recipe=recipe, user=self.request.user)
+        recipe.delete()
         return Response(
             'Рецепт удален из вашего списка',
             status=status.HTTP_204_NO_CONTENT
@@ -80,17 +83,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
-    # filter_backends = (IngredientSearchFilter,)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
 
 
 class IngredientWeightViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = IngredientWeight.objects.all()
     serializer_class = IngredientWeightSerializer
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
-    # filter_backends = (IngredientSearchFilter,)
-    # search_fields = ('^name',)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -114,6 +113,3 @@ class SubscriptionViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return context
 
-
-class UserViewSet(DjoserUserViewSet):
-    pagination_class = LimitOffsetPagination
