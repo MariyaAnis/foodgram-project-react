@@ -54,13 +54,13 @@ class ShoppingList(models.Model):
         User,
         verbose_name='кто подписался',
         on_delete=models.CASCADE,
-        related_name='shopping_list'
+        related_name='shopping_list_recipes'
     )
     recipe = models.ForeignKey(
         'recipes.Recipe',
         verbose_name='на какой рецепт',
         on_delete=models.CASCADE,
-        related_name='shopping_lists',
+        related_name='shopping_list_users',
     )
 
     class Meta:

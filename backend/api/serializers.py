@@ -93,6 +93,23 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return RecipeSmallSerializer(queryset, many=True).data
 
 
+class SubscribCreateDeleteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Follow
+        fields = [
+            'user',
+            'author'
+        ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author'),
+                message='Подписка уже есть'
+            )
+        ]
+
+
 class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
@@ -161,7 +178,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user is None or user.is_anonymous:
             return False
         recipe = obj
-        return ShoppingList.objects.filter(user=user, recipe=recipe).exist()
+        return ShoppingList.objects.filter(shopping_list_users=user, recipe=recipe).exist()
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):
@@ -197,6 +214,9 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
         read_only_field = ('id', 'author')
+
+    # def validators(self):
+#дописать валидатор
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
