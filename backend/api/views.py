@@ -1,36 +1,31 @@
-from rest_framework.response import Response
-from django.http import FileResponse
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import filters, permissions, viewsets, status, mixins
-from rest_framework.views import APIView
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
-from .filters import RecipeFilter
-from django.db.models import Sum
-from djoser.views import UserViewSet as DjUserViewSet
-
 import io
 
+from django.db.models import Sum
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet as DjUserViewSet
+from ingredients.models import Ingredient
+from recipes.models import IngredientWeight, Recipe, Tag
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
+from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from users.models import Favorite, Follow, ShoppingList, User
 
-from recipes.models import Recipe, Tag, IngredientWeight
-from users.models import Follow, ShoppingList, Favorite, User
-from ingredients.models import Ingredient
-
+from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnlyPermission
-from .serializers import (RecipeSerializer,
-                          SubscriptionSerializer,
-                          TagSerializer,
+from .serializers import (IngredientSerializer, IngredientWeightSerializer,
+                          RecipeCreateUpdateSerializer, RecipeSerializer,
                           RecipeSmallSerializer,
-                          IngredientSerializer,
-                          IngredientWeightSerializer,
-                          RecipeCreateUpdateSerializer,
-                          SubscribeCreateDeleteSerializer,)
+                          SubscribeCreateDeleteSerializer,
+                          SubscriptionSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):

@@ -1,10 +1,10 @@
-from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from djoser.serializers import UserSerializer, UserCreateSerializer
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import Recipe, Tag, IngredientWeight
-from users.models import Follow, ShoppingList, Favorite, User
 from ingredients.models import Ingredient
+from recipes.models import IngredientWeight, Recipe, Tag
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+from users.models import Favorite, Follow, ShoppingList, User
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -210,8 +210,65 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         )
         read_only_field = ('id', 'author')
 
-    # def validators(self):
-#дописать валидатор
+    def validate(self, data):
+        author = self.context.get('request').user
+        ingredients = self.initial_data.get('ingredients')
+        tags = self.initial_data.get('tags')
+        name = data.get('name')
+        self.ingredients_validate(ingredients)
+        self.tags_validate(tags)
+
+        if Recipe.objects.filter(author=author, name=name).exists():
+            raise serializers.ValidationError(
+                'Такой рецепт у вас уже есть!'
+            )
+
+        if ingredients:
+            self.ingredients_validate(ingredients)
+            data['ingredients'] = ingredients
+        if tags:
+            self.tags_validate(tags)
+            data['tags'] = tags
+        return data
+
+    @staticmethod
+    def ingredients_validate(ingredients):
+        ingredients_set = set()
+        if not ingredients:
+            raise serializers.ValidationError(
+                'Добавьте ингридиенты'
+            )
+        for ingredient in ingredients:
+            amount = ingredient.get('amount')
+            ingredient_id = ingredient.get('id')
+            if ingredient_id in ingredients_set:
+                raise serializers.ValidationError(
+                    'Ингредиенты в рецепте не должены повторяться.'
+                )
+            try:
+                int(ingredient_id)
+            except ValueError:
+                raise serializers.ValidationError(
+                    'Id ингридиента должно быть числом'
+                )
+            try:
+                int(amount)
+            except ValueError:
+                raise serializers.ValidationError(
+                    'Количество ингридиента должно быть числом'
+                )
+            ingredients_set.add(ingredient_id)
+
+    @staticmethod
+    def tags_validate(tags):
+        if not tags:
+            raise serializers.ValidationError(
+                'Необходимо добавить хотя бы один тэг'
+            )
+        if len(tags) > len(set(tags)):
+            raise serializers.ValidationError(
+                'Тэги не должны повторяться'
+            )
 
     @staticmethod
     def create_ingredients(ingredients, recipe):

@@ -1,10 +1,9 @@
+from api.views import (IngredientViewSet,  # SubscriptionViewSet,
+                       RecipeViewSet, SubscribeCreateDeleteView, TagViewSet,
+                       UserViewSet)
 from django.urls import include, path
-from rest_framework import routers
 from djoser.views import UserViewSet
-
-from api.views import (RecipeViewSet, TagViewSet, IngredientViewSet, UserViewSet,
-    # SubscriptionViewSet,
-                       SubscribeCreateDeleteView)
+from rest_framework import routers
 
 app_name = 'api'
 

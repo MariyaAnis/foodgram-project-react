@@ -1,6 +1,5 @@
 from django.contrib import admin
-
-from recipes.models import Recipe, Tag, IngredientWeight
+from recipes.models import IngredientWeight, Recipe, Tag
 
 
 class IngredientWeightInline(admin.TabularInline):
