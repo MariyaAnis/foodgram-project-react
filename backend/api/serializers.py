@@ -55,45 +55,40 @@ class RecipeSmallSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='author.id')
+    email = serializers.ReadOnlyField(source='author.email')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count'
-        )
-        read_only_fields = ('id', 'email', 'username', 'first_name', 'last_name',)
-
-    def get_is_subscribed(self, obj):
-        user = self.context['request'].user
-        if user.is_authenticated:
-            return Follow.objects.filter(user=user).filter(author=obj).exists()
-        return False
+        model = Follow
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'is_subscribed', 'recipes', 'recipes_count')
 
     @staticmethod
-    def get_recipes_count(obj):
-        return obj.recipes.all().count()
+    def get_is_subscribed(obj):
+        return Follow.objects.filter(
+            user=obj.user, author=obj.author
+        ).exists()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit is not None:
-            queryset = Recipe.objects.filter(author=obj.following)[:int(recipes_limit)]
-        else:
-            queryset = Recipe.objects.filter(author=obj.following)
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj.author)
+        if limit:
+            queryset = queryset[:int(limit)]
         return RecipeSmallSerializer(queryset, many=True).data
 
+    @staticmethod
+    def get_recipes_count(obj):
+        return Recipe.objects.filter(author=obj.author).count()
 
-class SubscribCreateDeleteSerializer(serializers.ModelSerializer):
+
+class SubscribeCreateDeleteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
@@ -171,14 +166,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user is None or user.is_anonymous:
             return False
         recipe = obj
-        return Favorite.objects.filter(user=user, recipe=recipe).exist()
+        return Favorite.objects.filter(user=user, recipe=recipe).exists()
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
         if user is None or user.is_anonymous:
             return False
         recipe = obj
-        return ShoppingList.objects.filter(shopping_list_users=user, recipe=recipe).exist()
+        return ShoppingList.objects.filter(user=user, recipe=recipe).exists()
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from django.http import FileResponse
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import filters, permissions, viewsets, status
+from rest_framework import filters, permissions, viewsets, status, mixins
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from .filters import RecipeFilter
 from django.db.models import Sum
-
+from djoser.views import UserViewSet as DjUserViewSet
 
 import io
 
@@ -30,7 +30,7 @@ from .serializers import (RecipeSerializer,
                           IngredientSerializer,
                           IngredientWeightSerializer,
                           RecipeCreateUpdateSerializer,
-                          SubscribCreateDeleteSerializer)
+                          SubscribeCreateDeleteSerializer,)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -159,30 +159,30 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TagSerializer
 
 
-class SubscriptionViewSet(viewsets.ModelViewSet):
-    serializer_class = SubscriptionSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('=following__username',)
+# class SubscriptionViewSet(viewsets.ReadOnlyModelViewSet):
+#     serializer_class = SubscriptionSerializer
+#     permission_classes = (permissions.IsAuthenticated,)
+#     filter_backends = (filters.SearchFilter,)
+#     search_fields = ('author__username',)
+#
+#     def get_queryset(self):
+#         return User.objects.filter(user=self.request.user)
+#
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context.update(
+#             {'recipes_limit': self.request.query_params.get('recipes_limit')}
+#         )
+#         return context
 
-    def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update(
-            {'recipes_limit': self.request.query_params.get('recipes_limit')}
-        )
-        return context
-
-
-class SubscriptionCreateDeleteView(APIView):
+class SubscribeCreateDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     @staticmethod
     def post(request, id):
         data = {'user': request.user.id, 'author': id}
-        serializer = SubscribCreateDeleteSerializer(
+        serializer = SubscribeCreateDeleteSerializer(
             data=data, context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
@@ -198,3 +198,22 @@ class SubscriptionCreateDeleteView(APIView):
         )
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserViewSet(DjUserViewSet):
+
+    @action(
+        detail=False,
+        permission_classes=[IsAuthenticated],
+        url_path='subscriptions',
+    )
+    def subscriptions(self, request):
+        user = request.user
+        queryset = Follow.objects.filter(user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscriptionSerializer(
+            pages,
+            many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
