@@ -19,7 +19,9 @@ class Recipe(models.Model):
         through='IngredientWeight'
         )
     tags = models.ManyToManyField('recipes.Tag', related_name='recipes_tag')
-    cooking_time = models.PositiveSmallIntegerField('время приготовления (в минутах)')
+    cooking_time = models.PositiveSmallIntegerField(
+        'время приготовления (в минутах)'
+    )
 
     class Meta:
         verbose_name = 'рецепт'

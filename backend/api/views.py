@@ -11,7 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
@@ -50,7 +50,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, **kwargs):
         recipe = get_object_or_404(Recipe, pk=self.kwargs.get('pk'))
         serializer = RecipeSmallSerializer(recipe)
-        return self.validator_create_delete(request, ShoppingList, serializer, recipe)
+        return self.validator_create_delete(
+            request, ShoppingList, serializer, recipe
+        )
 
     @action(
         detail=True,
@@ -61,11 +63,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, **kwargs):
         recipe = get_object_or_404(Recipe, pk=self.kwargs.get('pk'))
         serializer = RecipeSmallSerializer(recipe)
-        return self.validator_create_delete(request, Favorite, serializer, recipe)
+        return self.validator_create_delete(
+            request, Favorite, serializer, recipe
+        )
 
     def validator_create_delete(self, request, model, serializer, recipe):
         if request.method == 'POST':
-            if model.objects.filter(recipe=recipe, user=self.request.user).exists():
+            if model.objects.filter(
+                    recipe=recipe, user=self.request.user).exists():
                 return Response(
                     'Нельзя повторно добавить рецепт',
                     status=status.HTTP_400_BAD_REQUEST
@@ -73,7 +78,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             model.objects.create(recipe=recipe, user=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if not model.objects.filter(recipe=recipe, user=self.request.user).exists():
+        if not model.objects.filter(
+                recipe=recipe, user=self.request.user)\
+                .exists():
             return Response(
                 'Вы не добавляли этот рецепт',
                 status=status.HTTP_400_BAD_REQUEST
@@ -104,7 +111,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for ingredient in ingredients:
             p.drawString(
                 15, y,
-                f'{string_number}. {ingredient.name.capitalize()} ({ingredient.measurement_unit}) - {ingredient.amount}'
+                (f'{string_number}.'
+                 f'{ingredient.name.capitalize()}'
+                 f'({ingredient.measurement_unit}) - {ingredient.amount}'
+                 )
             )
             y -= 20
             string_number += 1
@@ -122,7 +132,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def download_shopping_cart(self, request):
-        recipe_list = Recipe.objects.filter(shopping_list_users__user=request.user)
+        recipe_list = Recipe.objects.filter(
+            shopping_list_users__user=request.user
+        )
         ingredient_list = Ingredient.objects.filter(
             ingredient_recipes__recipe__in=recipe_list
         ).annotate(amount=Sum('ingredient_recipes__amount'))
@@ -152,23 +164,6 @@ class IngredientWeightViewSet(viewsets.ReadOnlyModelViewSet):
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-
-# class SubscriptionViewSet(viewsets.ReadOnlyModelViewSet):
-#     serializer_class = SubscriptionSerializer
-#     permission_classes = (permissions.IsAuthenticated,)
-#     filter_backends = (filters.SearchFilter,)
-#     search_fields = ('author__username',)
-#
-#     def get_queryset(self):
-#         return User.objects.filter(user=self.request.user)
-#
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context.update(
-#             {'recipes_limit': self.request.query_params.get('recipes_limit')}
-#         )
-#         return context
 
 
 class SubscribeCreateDeleteView(APIView):

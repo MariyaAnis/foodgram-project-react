@@ -38,7 +38,3 @@ class IngredientWeightAdmin(admin.ModelAdmin):
     list_display = ('id', 'ingredient', 'amount')
     search_fields = ('ingredient',)
     empty_value_display = '-пусто-'
-
-
-
-
