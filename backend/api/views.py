@@ -1,24 +1,20 @@
-import io
-
 from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjUserViewSet
-from ingredients.models import Ingredient
-from recipes.models import IngredientWeight, Recipe, Tag
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from ingredients.models import Ingredient
+from recipes.models import IngredientWeight, Recipe, Tag
 from users.models import Favorite, Follow, ShoppingList, User
 
+from .create_pdf_A4 import create_pdf
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (IngredientSerializer, IngredientWeightSerializer,
@@ -79,8 +75,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if not model.objects.filter(
-                recipe=recipe, user=self.request.user)\
-                .exists():
+                recipe=recipe, user=self.request.user
+        ).exists():
             return Response(
                 'Вы не добавляли этот рецепт',
                 status=status.HTTP_400_BAD_REQUEST
@@ -91,39 +87,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'Рецепт удален из вашего списка',
             status=status.HTTP_204_NO_CONTENT
         )
-
-    @staticmethod
-    def create_pdf(ingredients, title):
-
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=A4)
-
-        pdfmetrics.registerFont(
-            TTFont('FreeSans', 'FreeSans.ttf'))
-
-        p.setFont('FreeSans', 20)
-        y = 810
-        p.drawString(55, y, f'{title}')
-        y -= 30
-
-        p.setFont('FreeSans', 14)
-        string_number = 1
-        for ingredient in ingredients:
-            p.drawString(
-                15, y,
-                (f'{string_number}.'
-                 f'{ingredient.name.capitalize()}'
-                 f'({ingredient.measurement_unit}) - {ingredient.amount}'
-                 )
-            )
-            y -= 20
-            string_number += 1
-
-        p.showPage()
-        p.save()
-        buffer.seek(0)
-
-        return buffer
 
     @action(
         detail=False,
@@ -139,7 +102,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredient_recipes__recipe__in=recipe_list
         ).annotate(amount=Sum('ingredient_recipes__amount'))
 
-        file = self.create_pdf(ingredient_list, 'Список покупок')
+        file = create_pdf('Список покупок', ingredient_list)
 
         return FileResponse(
             file,
