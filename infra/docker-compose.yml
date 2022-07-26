@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image: anismary/foodgram_frontend:v1
+    image: anismary/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
