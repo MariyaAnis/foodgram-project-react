@@ -11,7 +11,7 @@ services:
     restart: always
 
   backend:
-    image: anismary/foodgram:latest
+    image: anismary/foodgram:v1
     restart: always
     depends_on:
       - db
