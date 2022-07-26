@@ -13,12 +13,12 @@ class Recipe(models.Model):
         verbose_name='автор',
         on_delete=models.CASCADE,
         related_name='author_recipes'
-        )
+    )
     ingredients = models.ManyToManyField(
         Ingredient,
         related_name='recipes_ingredients',
         through='IngredientWeight'
-        )
+    )
     tags = models.ManyToManyField('recipes.Tag', related_name='recipes_tag')
     cooking_time = models.PositiveSmallIntegerField(
         'время приготовления (в минутах)'
