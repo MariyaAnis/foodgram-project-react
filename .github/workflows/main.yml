@@ -38,7 +38,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: anismary/foodgram:v1
+          tags: anismary/foodgram:latest
           file: backend/Dockerfile
 
   deploy:
