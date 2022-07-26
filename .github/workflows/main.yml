@@ -39,7 +39,8 @@ jobs:
         with:
           push: true
           tags: anismary/foodgram:latest
-          file: backend/Dockerfile
+          context: ../backend/
+          file: Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
