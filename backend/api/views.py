@@ -7,7 +7,7 @@ from ingredients.models import Ingredient
 from recipes.models import IngredientWeight, Recipe, Tag
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
+# from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,7 +29,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnlyPermission,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-    pagination_class = LimitOffsetPagination
+    # pagination_class = LimitOffsetPagination
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method == 'POST' or self.request.method == 'PATCH':
