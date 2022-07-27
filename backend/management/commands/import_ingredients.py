@@ -27,9 +27,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with open(
-                os.path.join(DATA_ROOT, options['filename']),
-                newline='',
-                encoding='utf8'
+                    os.path.join(DATA_ROOT, options['filename']),
+                    newline='',
+                    encoding='utf8'
             ) as csv_file:
                 data = csv.reader(csv_file)
                 for row in data:
