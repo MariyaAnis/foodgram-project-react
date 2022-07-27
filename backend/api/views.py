@@ -116,16 +116,20 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
+    pagination_class = None
 
 
 class IngredientWeightViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = IngredientWeight.objects.all()
     serializer_class = IngredientWeightSerializer
+    pagination_class = None
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
+
 
 
 class SubscribeCreateDeleteView(APIView):
