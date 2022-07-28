@@ -37,6 +37,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeCreateUpdateSerializer
         return RecipeSerializer
 
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(author=user)
+
     @action(
         detail=True,
         methods=('post', 'delete'),
