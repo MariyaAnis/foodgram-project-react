@@ -1,4 +1,3 @@
-from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -278,7 +277,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         author = self.context.get('request').user
         tags = validated_data.pop('tags')
-        weight = validated_data.pop('weight')
+        validated_data.pop('weight')
         ingr = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(author=author, **validated_data)
         self.create_tags(tags, recipe)
