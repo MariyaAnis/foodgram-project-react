@@ -288,5 +288,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         instance.tags.clear()
         IngredientWeight.objects.filter(recipe=instance).delete()
         self.create_tags(validated_data.pop('tags'), instance)
-        self.create_ingredients(validated_data.pop('weight'), instance)
+        validated_data.pop('weight')
+        self.create_ingredients(validated_data.pop('ingredients'), instance)
         return super().update(instance, validated_data)
