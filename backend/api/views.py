@@ -3,17 +3,18 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjUserViewSet
-from ingredients.models import Ingredient
-from recipes.models import IngredientWeight, Recipe, Tag
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from ingredients.models import Ingredient
+from recipes.models import IngredientWeight, Recipe, Tag
 from users.models import Favorite, Follow, ShoppingList, User
 
 from .create_pdf_A4 import create_pdf
-from .filters import RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 from .custom_pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (IngredientSerializer, IngredientWeightSerializer,
@@ -63,15 +64,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     def validator_create_delete(self, request, model, serializer, recipe):
-        if request.method == 'POST':
-            if model.objects.filter(
-                    recipe=recipe, user=self.request.user).exists():
-                return Response(
-                    'Нельзя повторно добавить рецепт',
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            model.objects.create(recipe=recipe, user=self.request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # if request.method == 'POST':
+        #     if model.objects.filter(
+        #             recipe=recipe, user=self.request.user).exists():
+        #         return Response(
+        #             'Нельзя повторно добавить рецепт',
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+        #     model.objects.create(recipe=recipe, user=self.request.user)
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if not model.objects.filter(
                 recipe=recipe, user=self.request.user
@@ -114,8 +115,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('^name',)
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
     pagination_class = None
 
 
