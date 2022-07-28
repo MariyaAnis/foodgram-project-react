@@ -122,14 +122,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
     pagination_class = None
-    permission_classes = (AllowAny, )
 
 
 class IngredientWeightViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = IngredientWeight.objects.all()
     serializer_class = IngredientWeightSerializer
     pagination_class = None
-    permission_classes = (AllowAny, )
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

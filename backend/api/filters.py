@@ -6,12 +6,12 @@ from users.models import User
 
 
 class RecipeFilter(FilterSet):
-    author = filters.ModelChoiceFilter(queryset=User.objects.all())
-    tags = filters.ModelMultipleChoiceFilter(
-        field_name='tags__slug',
-        queryset=Tag.objects.all(),
-        to_field_name='slug',
-    )
+    # author = filters.ModelChoiceFilter(queryset=User.objects.all())
+    # tags = filters.ModelMultipleChoiceFilter(
+    #     field_name='tags__slug',
+    #     queryset=Tag.objects.all(),
+    #     # to_field_name='slug',
+    # )
     is_favorited = filters.BooleanFilter(
         method='filter_is_favorited',
         label='Показать любимые рецепты'
