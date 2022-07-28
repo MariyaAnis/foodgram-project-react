@@ -109,7 +109,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
@@ -126,8 +125,5 @@ DJOSER = {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
         'current_user': 'api.serializers.CustomUserSerializer',
     },
-    'PERMISSIONS': {
-
-    }
 
 }

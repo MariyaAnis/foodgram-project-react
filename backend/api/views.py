@@ -163,9 +163,9 @@ class SubscribeCreateDeleteView(APIView):
 
 class UserViewSet(DjUserViewSet):
 
-    def get_permissions(self):
-        if self.action == "GET":
-            self.permission_classes = AllowAny
+    # def get_permissions(self):
+    #     if self.action == "GET":
+    #         self.permission_classes = AllowAny
 
     @action(
         detail=False,
