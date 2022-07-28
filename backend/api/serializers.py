@@ -37,7 +37,7 @@ class IngredientWeightSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ('id', 'name', 'color', 'slug')
+        fields = ('id', 'name', 'color', )
         read_only_fields = ('id',)
         model = Tag
 
@@ -177,7 +177,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(min_value=1)
 
     class Meta:
