@@ -21,7 +21,8 @@ from .serializers import (IngredientSerializer, IngredientWeightSerializer,
                           RecipeCreateUpdateSerializer, RecipeSerializer,
                           RecipeSmallSerializer,
                           SubscribeCreateDeleteSerializer,
-                          SubscriptionSerializer, TagSerializer)
+                          SubscriptionSerializer, TagSerializer,
+                          CustomUserCreateSerializer, CustomUserSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -162,6 +163,14 @@ class SubscribeCreateDeleteView(APIView):
 
 
 class UserViewSet(DjUserViewSet):
+    queryset = User.objects.all()
+    pagination_class = None
+    permission_classes = (AllowAny,)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return CustomUserSerializer
+        return CustomUserCreateSerializer
 
     @action(
         detail=False,
