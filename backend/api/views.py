@@ -106,10 +106,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredient_recipes__recipe__in=recipe_list
         ).annotate(amount=Sum('ingredient_recipes__amount'))
 
-        file = create_pdf('Список покупок', ingredient_list)
+        my_file = create_pdf('Список покупок', ingredient_list)
 
         return FileResponse(
-            file,
+            my_file,
             as_attachment=True,
             filename='shopping_list.pdf',
             status=status.HTTP_200_OK
@@ -162,6 +162,10 @@ class SubscribeCreateDeleteView(APIView):
 
 
 class UserViewSet(DjUserViewSet):
+
+    def get_permissions(self):
+        if self.action == "GET":
+            self.permission_classes = AllowAny
 
     @action(
         detail=False,
