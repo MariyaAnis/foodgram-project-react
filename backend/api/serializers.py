@@ -177,7 +177,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    id = serializers.IntegerField()
     amount = serializers.IntegerField(min_value=1)
 
     class Meta:
