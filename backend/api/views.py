@@ -171,6 +171,7 @@ class UserViewSet(DjUserViewSet):
         detail=False,
         permission_classes=[IsAuthenticated],
         url_path='subscriptions',
+        pagination_class=CustomPagination
     )
     def subscriptions(self, request):
         user = request.user
