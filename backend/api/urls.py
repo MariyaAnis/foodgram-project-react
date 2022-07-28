@@ -19,8 +19,4 @@ urlpatterns = [
     path('users/<int:id>/subscribe/',
          SubscribeCreateDeleteView.as_view(),
          name='subscribe'),
-#     path('subscriptions/',
-#          SubscribeCreateDeleteView.as_view(),
-#          name='subscribe'),
-# ]
 ]
