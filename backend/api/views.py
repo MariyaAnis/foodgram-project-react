@@ -32,10 +32,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
     pagination_class = CustomPagination
 
-    # def get_serializer_class(self):
-    #     if self.request.method == 'POST' or self.request.method == 'PATCH':
-    #         return RecipeCreateUpdateSerializer
-    #     return RecipeSerializer
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -135,6 +131,7 @@ class IngredientWeightViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientWeightSerializer
     pagination_class = None
     permission_classes = (AllowAny, )
+
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
