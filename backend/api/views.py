@@ -131,7 +131,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-
 class SubscribeCreateDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
