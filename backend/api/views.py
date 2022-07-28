@@ -15,7 +15,7 @@ from users.models import Favorite, Follow, ShoppingList, User
 
 from .create_pdf_A4 import create_pdf
 from .filters import RecipeFilter
-# from .permissions import IsAuthorOrReadOnlyPermission
+from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (IngredientSerializer, IngredientWeightSerializer,
                           RecipeCreateUpdateSerializer, RecipeSerializer,
                           RecipeSmallSerializer,
@@ -26,10 +26,11 @@ from .serializers import (IngredientSerializer, IngredientWeightSerializer,
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    # permission_classes = (IsAuthorOrReadOnlyPermission,)
+    permission_classes = (IsAuthorOrReadOnlyPermission,)
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     # pagination_class = LimitOffsetPagination
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.request.method == 'POST' or self.request.method == 'PATCH':
