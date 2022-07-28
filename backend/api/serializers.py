@@ -198,16 +198,17 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'id',
             'ingredients',
-            'author',
             'tags',
             'image',
             'name',
             'text',
             'cooking_time'
         )
-        read_only_field = ('id', 'author')
+
+    def to_representation(self, instance):
+        serializer = RecipeSerializer(instance)
+        return serializer.data
 
     def validate(self, data):
         author = self.context.get('request').user
