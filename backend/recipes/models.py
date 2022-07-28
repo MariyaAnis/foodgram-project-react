@@ -17,7 +17,8 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         related_name='recipes_ingredients',
-        through='IngredientWeight'
+        through='IngredientWeight',
+        through_fields=('recipe', 'ingredient'),
     )
     tags = models.ManyToManyField('recipes.Tag', related_name='recipes_tag')
     cooking_time = models.PositiveSmallIntegerField(

@@ -14,8 +14,8 @@ from recipes.models import IngredientWeight, Recipe, Tag
 from users.models import Favorite, Follow, ShoppingList, User
 
 from .create_pdf_A4 import create_pdf
-from .filters import IngredientFilter, RecipeFilter
 from .custom_pagination import CustomPagination
+from .filters import IngredientFilter, RecipeFilter
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (IngredientSerializer, IngredientWeightSerializer,
                           RecipeCreateUpdateSerializer, RecipeSerializer,
@@ -32,14 +32,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
     pagination_class = CustomPagination
 
-    def get_serializer_class(self):
-        if self.request.method == 'POST' or self.request.method == 'PATCH':
-            return RecipeCreateUpdateSerializer
-        return RecipeSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method == 'POST' or self.request.method == 'PATCH':
+    #         return RecipeCreateUpdateSerializer
+    #     return RecipeSerializer
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(author=user)
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return RecipeSerializer
+        return RecipeCreateUpdateSerializer
+
+    # def perform_create(self, serializer):
+    #     user = self.request.user
+    #     serializer.save(author=user)
 
     @action(
         detail=True,
@@ -68,15 +73,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     def validator_create_delete(self, request, model, serializer, recipe):
-        # if request.method == 'POST':
-        #     if model.objects.filter(
-        #             recipe=recipe, user=self.request.user).exists():
-        #         return Response(
-        #             'Нельзя повторно добавить рецепт',
-        #             status=status.HTTP_400_BAD_REQUEST
-        #         )
-        #     model.objects.create(recipe=recipe, user=self.request.user)
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if request.method == 'POST':
+            if model.objects.filter(
+                    recipe=recipe, user=self.request.user).exists():
+                return Response(
+                    'Нельзя повторно добавить рецепт',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            model.objects.create(recipe=recipe, user=self.request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if not model.objects.filter(
                 recipe=recipe, user=self.request.user
