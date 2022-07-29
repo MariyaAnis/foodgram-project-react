@@ -104,7 +104,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(amount=Sum('ingredient_recipes__amount'))
 
         my_file = create_pdf('Список покупок', ingredient_list)
-        # raise Exception('don`t work')
         return FileResponse(
             my_file,
             as_attachment=True,
