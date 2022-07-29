@@ -95,7 +95,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         pagination_class=None
     )
     def download_shopping_cart(self, request):
-        raise Exception('don`t work')
+
         recipe_list = Recipe.objects.filter(
             shopping_list_users__user=self.request.user
         )
@@ -104,7 +104,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(amount=Sum('ingredient_recipes__amount'))
 
         my_file = create_pdf('Список покупок', ingredient_list)
-
+        raise Exception('don`t work')
         return FileResponse(
             my_file,
             as_attachment=True,
