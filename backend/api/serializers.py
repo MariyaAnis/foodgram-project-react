@@ -178,11 +178,16 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     amount = serializers.IntegerField(min_value=1)
 
     class Meta:
         fields = ['id', 'amount']
         model = IngredientWeight
+
+    @staticmethod
+    def get_id(obj):
+        return obj.ingredient.id
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
