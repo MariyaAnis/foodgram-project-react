@@ -95,13 +95,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def download_shopping_cart(self, request):
+        raise Exception('don`t work')
         recipe_list = Recipe.objects.filter(
             shopping_list_users__user=request.user
         )
         ingredient_list = Ingredient.objects.filter(
             ingredient_recipes__recipe__in=recipe_list
         ).annotate(amount=Sum('ingredient_recipes__amount'))
-        raise Exception('don`t work')
+
         my_file = create_pdf('Список покупок', ingredient_list)
 
         return FileResponse(
