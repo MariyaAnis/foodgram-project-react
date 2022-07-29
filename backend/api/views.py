@@ -95,9 +95,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         pagination_class=None
     )
     def download_shopping_cart(self, request):
-        # raise Exception('don`t work')
+        raise Exception('don`t work')
         recipe_list = Recipe.objects.filter(
-            shopping_list_users__user=request.user
+            shopping_list_users__user=self.request.user
         )
         ingredient_list = Ingredient.objects.filter(
             ingredient_recipes__recipe__in=recipe_list
