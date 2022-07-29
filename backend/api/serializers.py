@@ -178,7 +178,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):
-    # id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(min_value=1)
 
     class Meta:
@@ -265,7 +264,9 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     @staticmethod
     def create_ingredients(ingredients, recipe):
         for ingredient in ingredients:
-            temp_ingredient = get_object_or_404(Ingredient, id=ingredient['id'])
+            temp_ingredient = get_object_or_404(
+                Ingredient, id=ingredient['id']
+            )
             IngredientWeight.objects.create(
                 recipe=recipe,
                 ingredient=temp_ingredient,
