@@ -37,10 +37,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateUpdateSerializer
 
-    # def perform_create(self, serializer):
-    #     user = self.request.user
-    #     serializer.save(author=user)
-
     @action(
         detail=True,
         methods=('post', 'delete'),
@@ -162,6 +158,7 @@ class SubscribeCreateDeleteView(APIView):
 
 
 class UserViewSet(DjUserViewSet):
+    permission_classes = (AllowAny,)
 
     @action(
         detail=False,
