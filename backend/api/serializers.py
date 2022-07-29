@@ -18,6 +18,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientWeightSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     measurement_unit = serializers.SerializerMethodField()
 
@@ -28,6 +29,10 @@ class IngredientWeightSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_measurement_unit(obj):
         return obj.ingredient.measurement_unit
+
+    @staticmethod
+    def get_id(obj):
+        return obj.ingredient.id
 
     class Meta:
         model = IngredientWeight
