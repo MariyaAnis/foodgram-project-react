@@ -1,5 +1,6 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -177,7 +178,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWeightCreateSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    # id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField(min_value=1)
 
     class Meta:
@@ -264,8 +265,10 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     @staticmethod
     def create_ingredients(ingredients, recipe):
         for ingredient in ingredients:
+            temp_ingredient = get_object_or_404(Ingredient, id=ingredient['id'])
             IngredientWeight.objects.create(
-                recipe=recipe, ingredient_id=ingredient['id'],
+                recipe=recipe,
+                ingredient=temp_ingredient,
                 amount=ingredient['amount']
             )
 
