@@ -12,7 +12,7 @@ def create_pdf(title, ingredients):
     p = canvas.Canvas(buffer, pagesize=A4)
 
     pdfmetrics.registerFont(
-        TTFont('FreeSans', 'static/FreeSans.ttf'))
+        TTFont('FreeSans', 'FreeSans.ttf'))
 
     p.setFont('FreeSans', 20)
     y = 810
